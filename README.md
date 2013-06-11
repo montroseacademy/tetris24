@@ -2,7 +2,9 @@
 
 ![screenshot of tetris24](http://tetris-comikaze24.rhcloud.com/screenshot.png)
 
-_Description: tetris24 is an HTML5 tetris clone written in 24 hours during Comikaze24._
+_tetris24 is an HTML5 tetris clone written in 24 hours during Comikaze24._
+
+You can play the game at [http://tetris-comikaze24.rhcloud.com/](http://tetris-comikaze24.rhcloud.com/ "24 Hour Tetris"). 
 
 Within the limitations of the coding time, this is basically my personal take on Tetris. At its heart it clones the Game Boy version, with a few minor rule changes that better fit my aesthetic.
 
