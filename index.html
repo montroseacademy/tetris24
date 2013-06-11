@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<!--[if IE 8]>         <html class="no-js lt-ie9" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8" />
+  <title>24 Hour Tetris</title>
+
+  <!-- All original work is licensed under a Creative Commons Attribution 3.0 Australia License and authored by Trevor Jay. For more details see: http://creativecommons.org/licenses/by/3.0/au/deed.en_GB -->
+
+  <link rel="icon" href="72.png" sizes="72x72" type="image/png"/>
+  <link rel="icon" href="144.png" sizes="144x144" type="image/png"/>
+
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+
+  <style>
+body {
+  background: rgb(219,219,219);
+  font-family: sans-serif;
+  position: relative;
+}
+
+#info {
+  position: absolute;
+  left: 1em;
+  top: 4em;
+  font-size: 3em;
+}
+
+#prevue {
+  position: absolute;
+  top: 0px;
+  right: 1em;
+  width: 300px;
+  text-align: center;
+  font-size: 2em;
+}
+
+#notes {
+  text-align: left;
+}
+
+#pause_menu {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+#title {
+  font-size: 2em;
+  font-weight: bold;
+}
+
+  </style>
+</head>
+<body>
+<div style="position: relative;">
+<br/>
+<center>
+  <canvas id="field" width="350" height="630" style="border: 2px solid black;"></canvas>
+  <canvas id="bricks" width="350" height="630" style="border: 2px solid black; display: none;"></canvas>
+  <div id="title">24 Hour Tetris</div>
+</center>
+
+<div id="info">
+  <div id="score">Score: 0</div> 
+  <div id="level">Level: 0</div> 
+  <div id="togo">To Next: 10</div>
+</div>
+
+<canvas id="mask" width="40" height="40" style="border: 2px solid black; position: absolute; top: 0px; left: 324px; display: none;"></canvas>
+
+<canvas id="background" width="120" height="190" style="border: 2px solid black; position: absolute; top: 0px; left: 202px; display: none;"></canvas>
+
+<canvas id="future" width="120" height="190" style="border: 2px solid black; position: absolute; top: 0px; left: 366px; display: none;"></canvas>
+
+<canvas id="buffer" width="140" height="140" style="border: 2px solid black; position: absolute; top: 0px; left: 0px; display: none;"></canvas>
+
+<canvas id="dpad" width="350" height="150" style="border: 2px solid black; position: absolute; top: 0px; right: 0px; display: none;"></canvas>
+
+
+<div id="prevue">
+  <h2>Next:</h2>
+  <canvas id="next" width="140" height="140" style="border: 2px solid black; background: white;"></canvas>
+  <div id="pause_menu">
+    <form>
+     <input type="checkbox" name="paused" id="paused"></input>paused
+    </form>
+  </div>
+  <div id="notes">
+  Use the w,a,s,d keys to move the terominos. The j and k keys rotate.
+  </div>
+</div>
+
+</div>
+  <script type="text/javascript">
+var db = null;
+
+$(function() {
+  //globals
+  var frameCount = 0;
+  var lastFPS = 0;
+  var paused = $('#paused');
+  var cutscene = false;
+  var score = 0;
+  var scr = $('#score');
+  var lvl = $('#level');
+  var togo = $('#togo');
+  var level = 1;
+  var lineCount = 10;
+
+  //canvi
+  var bft = $('#buffer')[0];
+  var bf = bft.getContext('2d');
+  bf.webkitImageSmoothingEnabled = false;
+  var mskt = $('#mask')[0];
+  var msk = mskt.getContext('2d');
+  msk.webkitImageSmoothingEnabled = false;
+  var bgt = $('#background')[0];
+  var bg = bgt.getContext('2d');
+  bg.webkitImageSmoothingEnabled = false;
+  var ftt = $('#future')[0];
+  var ft = ftt.getContext('2d');
+  ft.webkitImageSmoothingEnabled = false;
+  ft.globalCompositeOperation = 'lighter';
+  var ctxt = $('#field')[0];
+  var ctx = ctxt.getContext('2d');
+  ctx.webkitImageSmoothingEnabled = false;
+  var dpdf = $('#dpad')[0].getContext('2d');
+  dpdf.webkitImageSmoothingEnabled = false;
+  var brkt = $('#bricks')[0];
+  var brk = brkt.getContext('2d');
+  brk.webkitImageSmoothingEnabled = false;
+  var nxt = $('#next')[0].getContext('2d');
+  nxt.webkitImageSmoothingEnabled = false;
+
+  //pieces
+  var pcs = ['i','j','l','o','s','t','z'];
+  var bag = [];
+
+  //gravity
+  var gs = [53,49,45,41,37,33,28,22,17,11,10,9,8,7,6,6,5,5,4,4,3];
+  for (var i = 0; i < gs.length; i++) gs[i] = Math.floor(gs[i]*(2/3)*(3/4)); 
+  //initialize bank
+  var bank = {};
+  var pc;
+  var bits;
+  var bitmaps;
+  var rgb;
+
+  //i
+  bitmaps = [];
+  pc = {};
+  bits = [0,0,0,0,
+          0,0,0,0,
+          1,1,1,1,
+          0,0,0,0];
+  bitmaps[0] = bits;
+  bits = [0,1,0,0,
+          0,1,0,0,
+          0,1,0,0,
+          0,1,0,0];
+  bitmaps[1] = bits;
+  pc.bitmaps = bitmaps;
+  rgb = {};
+  rgb.r = 32; rgb.g = 32; rgb.b = 32;
+  pc.rgb = rgb;
+  bank['i'] = pc;
+
+  //j
+  bitmaps = [];
+  pc = {};
+  bits = [0,0,0,0,
+          1,1,1,0,
+          0,0,1,0,
+          0,0,0,0];
+  bitmaps[0] = bits;
+  bits = [0,1,0,0,
+          0,1,0,0,
+          1,1,0,0,
+          0,0,0,0];
+  bitmaps[1] = bits;
+  bits = [1,0,0,0,
+          1,1,1,0,
+          0,0,0,0,
+          0,0,0,0];
+  bitmaps[2] = bits;
+  bits = [0,1,1,0,
+          0,1,0,0,
+          0,1,0,0,
+          0,0,0,0];
+  bitmaps[3] = bits;
+  pc.bitmaps = bitmaps;
+  rgb = {};
+  rgb.r = 64; rgb.g = 64; rgb.b = 64;
+  pc.rgb = rgb;
+  bank['j'] = pc;
+
+  //l
+  bitmaps = [];
+  pc = {};
+  bits = [0,0,0,0,
+          1,1,1,0,
+          1,0,0,0,
+          0,0,0,0];
+  bitmaps[0] = bits;
+  bits = [1,1,0,0,
+          0,1,0,0,
+          0,1,0,0,
+          0,0,0,0];
+  bitmaps[1] = bits;
+  bits = [0,0,1,0,
+          1,1,1,0,
+          0,0,0,0,
+          0,0,0,0];
+  bitmaps[2] = bits;
+  bits = [0,1,0,0,
+          0,1,0,0,
+          0,1,1,0,
+          0,0,0,0];
+  bitmaps[3] = bits;
+  pc.bitmaps = bitmaps;
+  rgb = {};
+  rgb.r = 96; rgb.g = 96; rgb.b = 96;
+  pc.rgb = rgb;
+  bank['l'] = pc;
+
+  //o
+  bitmaps = [];
+  pc = {};
+  bits = [0,0,0,0,
+          0,1,1,0,
+          0,1,1,0,
+          0,0,0,0];
+  bitmaps[0] = bits;
+  pc.bitmaps = bitmaps;
+  rgb = {};
+  rgb.r = 128; rgb.g = 128; rgb.b = 128;
+  pc.rgb = rgb;
+  bank['o'] = pc;
+
+  //s
+  bitmaps = [];
+  pc = {};
+  bits = [0,0,0,0,
+          0,1,1,0,
+          1,1,0,0,
+          0,0,0,0];
+  bitmaps[0] = bits;
+  bits = [1,0,0,0,
+          1,1,0,0,
+          0,1,0,0,
+          0,0,0,0];
+  bitmaps[1] = bits;
+  pc.bitmaps = bitmaps;
+  rgb = {};
+  rgb.r = 153; rgb.g = 153; rgb.b = 153;
+  pc.rgb = rgb;
+  bank['s'] = pc;
+
+  //t
+  bitmaps = [];
+  pc = {};
+  bits = [0,0,0,0,
+          1,1,1,0,
+          0,1,0,0,
+          0,0,0,0];
+  bitmaps[0] = bits;
+  bits = [0,1,0,0,
+          1,1,0,0,
+          0,1,0,0,
+          0,0,0,0];
+  bitmaps[1] = bits;
+  bits = [0,1,0,0,
+          1,1,1,0,
+          0,0,0,0,
+          0,0,0,0];
+  bitmaps[2] = bits;
+  bits = [0,1,0,0,
+          0,1,1,0,
+          0,1,0,0,
+          0,0,0,0];
+  bitmaps[3] = bits;
+  pc.bitmaps = bitmaps;
+  rgb = {};
+  rgb.r = 165; rgb.g = 164; rgb.b = 205;
+  pc.rgb = rgb;
+  bank['t'] = pc;
+
+  //z
+  bitmaps = [];
+  pc = {};
+  bits = [0,0,0,0,
+          1,1,0,0,
+          0,1,1,0,
+          0,0,0,0];
+  bitmaps[0] = bits;
+  bits = [0,1,0,0,
+          1,1,0,0,
+          1,0,0,0,
+          0,0,0,0];
+  bitmaps[1] = bits;
+  pc.bitmaps = bitmaps;
+  rgb = {};
+  rgb.r = 82; rgb.g = 82; rgb.b = 102;
+  pc.rgb = rgb;
+  bank['z'] = pc;
+
+  //prepare the imgs
+  for (var i = 0; i < pcs.length; i++) {
+    var ltr = pcs[i];
+    var frames = [];
+    var masks = [];
+    for (var frm = 0; frm < bank[ltr].bitmaps.length; frm++) {
+      var img = bf.createImageData(140,140);
+      var mask = msk.createImageData(40,40);
+      for (var bx = 0; bx < 4; bx++) {
+        for (var by = 0; by < 4; by++) {
+          if (bank[ltr].bitmaps[frm][by*4+bx] != 1) continue;
+          for (var fx = 0; fx < 10; fx++) {
+            for (var fy = 0; fy < 10; fy++) {
+              var x = bx*10+fx;
+              var y = by*10+fy;
+              mask.data[y*40*4+x*4+0] = 128;
+              mask.data[y*40*4+x*4+1] = 0;
+              mask.data[y*40*4+x*4+2] = 0;
+              mask.data[y*40*4+x*4+3] = 255;
+            }
+          }
+          for (var fx = 0; fx < 35; fx++) {
+            for (var fy = 0; fy < 35; fy++) {
+              var x = bx*35+fx;
+              var y = by*35+fy;
+              img.data[y*140*4+x*4+0] = bank[ltr].rgb.r;
+              img.data[y*140*4+x*4+1] = bank[ltr].rgb.g;
+              img.data[y*140*4+x*4+2] = bank[ltr].rgb.b;
+              img.data[y*140*4+x*4+3] = 255;
+            }
+          }
+        }
+      }
+      frames[frm] = img;
+      masks[frm] = mask;
+    }
+    bank[ltr].frames = frames;
+    bank[ltr].masks = masks;
+  }
+
+  //handle IO
+  var Dpad = function(ctx) {
+    this.a = false;
+    this.aLast = false;
+    this.b = false;
+    this.bLast = false;
+
+    this.u = false;
+    this.uLast = false;
+    this.d = false;
+    this.dLast = false;
+    this.l = false;
+    this.lLast = false;
+    this.r = false;
+    this.rLast = false;
+
+    this.draw = function() {
+      ctx.clearRect(0,0,350,150);
+      ctx.save();
+      ctx.fillStyle = "black";
+      ctx.font = "25px sans-serif";
+
+      var fps = '' + lastFPS;
+      if (fps.length < 2) fps = '0' + fps;
+      fps = fps + " fps";
+      ctx.fillText(fps,200,25);
+
+      if (this.u == true) ctx.fillRect(50,0,50,50);
+      if (this.d == true) ctx.fillRect(50,100,50,50);
+      if (this.l == true) ctx.fillRect(0,50,50,50);
+      if (this.r == true) ctx.fillRect(100,50,50,50);
+
+      if (this.a == true) ctx.fillRect(200,50,50,50);
+      if (this.b == true) ctx.fillRect(300,50,50,50);
+
+      ctx.restore();
+    }
+  }
+  var dpd = new Dpad(dpdf);
+
+  document.onkeypress = function(evt) {
+    if (evt.keyCode == 32) {
+      paused.prop('checked',!paused.prop('checked'));
+      return false;
+    }
+  }
+  document.onkeydown = function(evt) {
+    switch(evt.keyCode) {
+      case 87:
+        dpd.uLast = dpd.u;
+        dpd.u = true;
+        break;
+      case 83:
+        dpd.dLast = dpd.d;
+        dpd.d = true;
+        break;
+      case 65:
+        dpd.lLast = dpd.l;
+        dpd.l = true;
+        break;
+      case 68:
+        dpd.rLast = dpd.r;
+        dpd.r = true;
+        break;
+      case 74:
+        dpd.aLast = dpd.a;
+        dpd.a = true;
+        break;
+      case 75:
+        dpd.bLast = dpd.b;
+        dpd.b = true;
+        break;
+    }
+  }
+  document.onkeyup = function(evt) {
+    switch(evt.keyCode) {
+      case 87:
+        dpd.uLast = dpd.u;
+        dpd.u = false;
+        break;
+      case 83:
+        dpd.dLast = dpd.d;
+        dpd.d = false;
+        break;
+      case 65:
+        dpd.lLast = dpd.l;
+        dpd.l = false;
+        break;
+      case 68:
+        dpd.rLast = dpd.r;
+        dpd.r = false;
+        break;
+      case 74:
+        dpd.aLast = dpd.a;
+        dpd.a = false;
+        break;
+      case 75:
+        dpd.bLast = dpd.b;
+        dpd.b = false;
+        break;
+    }
+  }
+
+  //logic and timers
+
+  var occupied = 
+  [0,0,0,0,0,0,0,0,0,0,
+   0,0,0,0,0,0,0,0,0,0,
+   0,0,0,0,0,0,0,0,0,0,
+   0,0,0,0,0,0,0,0,0,0,
+   0,0,0,0,0,0,0,0,0,0,
+   0,0,0,0,0,0,0,0,0,0,
+   0,0,0,0,0,0,0,0,0,0,
+   0,0,0,0,0,0,0,0,0,0,
+   0,0,0,0,0,0,0,0,0,0,
+   0,0,0,0,0,0,0,0,0,0,
+   0,0,0,0,0,0,0,0,0,0,
+   0,0,0,0,0,0,0,0,0,0,
+   0,0,0,0,0,0,0,0,0,0,
+   0,0,0,0,0,0,0,0,0,0,
+   0,0,0,0,0,0,0,0,0,0,
+   0,0,0,0,0,0,0,0,0,0,
+   0,0,0,0,0,0,0,0,0,0,
+   0,0,0,0,0,0,0,0,0,0];
+
+  var G = gs[0];
+  var pc = {};
+  pc.dirty = false;
+  pc.dir = 0;
+  pc.downCount = G;
+  pc.DAS = 10;
+  pc.lockDelay = G;
+
+  pc.nxt = drawPiece();
+  pc.ltr = drawPiece();
+
+  function loop() {
+    if (paused.prop('checked')) {
+      setTimeout(loop,25);
+      pc.dirty = true; 
+      return;
+    }
+
+    if (cutscene) {
+      setTimeout(loop,25);
+      return;
+    }
+
+    if (valid(pc.x,pc.y+1,pc.frm)) pc.lockDelay = G;
+    if (--pc.lockDelay < 0) {
+      occupy();
+      clear();
+      if (pc.y > 0) {
+        pc.ltr = pc.nxt;
+        pc.nxt = drawPiece();
+      } else {
+        scr.html('Game Over');
+      }
+      setTimeout(loop,25);
+      return;
+    }
+
+    pc.downCount = pc.downCount - (dpd.d ? 8 : 1);
+    if (pc.downCount < 0) {
+      pc.downCount = G;
+      if (valid(pc.x,pc.y+1,pc.frm)) pc.y++;
+    }
+
+    if (dpd.a && !dpd.aLast) {
+      dpd.aLast = dpd.a;
+      var frm = (4 + (pc.frm - 1) % 4) % 4;
+      if (valid(pc.x,pc.y,frm)) {
+        pc.frm = frm;
+      }
+    }
+
+    if (dpd.b && !dpd.bLast) {
+      dpd.bLast = dpd.b;
+      var frm = (pc.frm + 1) % 4;
+      if (valid(pc.x,pc.y,frm)) {
+        pc.frm = frm;
+      }
+    }
+
+    if (dpd.l && !dpd.lLast) {
+      dpd.lLast = dpd.l;
+      pc.DAS = 10;
+      if (valid(pc.x - 1,pc.y,pc.frm)) pc.x = pc.x - 1;
+    }
+
+    if (dpd.r && !dpd.rLast) {
+      dpd.rLast = dpd.r;
+      pc.DAS = 10;
+      if (valid(pc.x+1,pc.y,pc.frm)) pc.x = pc.x + 1;
+    }
+
+    pc.DAS--;
+    if (pc.DAS < 0 && dpd.l) {
+      if (valid(pc.x-1,pc.y,pc.frm)) pc.x = pc.x - 1;
+    }
+    if (pc.DAS < 0 && dpd.r) {
+      if (valid(pc.x+1,pc.y,pc.frm)) pc.x = pc.x + 1;
+    }
+    if (pc.DAS < 0) pc.DAS = 4;
+
+    pc.dirty = true;
+    setTimeout(loop,25);
+  }
+  setTimeout(loop,25);
+
+  //display stuff
+  function tick() {
+    lastFPS = frameCount*2;
+    frameCount = 0;
+    setTimeout(tick,500);
+  }
+  //setTimeout(tick,500);
+
+  if (typeof requestAnimationFrame == "undefined" && typeof mozRequestAnimationFrame == "undefined") requestAnimationFrame = webkitRequestAnimationFrame;
+  if (typeof requestAnimationFrame == "undefined" && typeof webkitRequestAnimationFrame == "undefined") requestAnimationFrame = mozRequestAnimationFrame;
+
+  function refresh() {
+    //frameCount++;
+    //dpd.draw();
+
+    //real work
+    if (pc.dirty) {
+      bf.putImageData(bank[pc.ltr].frames[pc.frm % bank[pc.ltr].frames.length],0,0);
+      pc.dirty = false;
+    }
+
+    ctx.save();
+    ctx.fillStyle = "rgba(255,255,255,255)";
+    ctx.fillRect(0,0,350,630);
+    ctx.restore();
+
+    ctx.drawImage(brkt,0,0,350,630);
+    ctx.drawImage(bft,35*pc.x,35*pc.y);
+
+    nxt.clearRect(0,0,140,140);
+    nxt.putImageData(bank[pc.nxt].frames[0],0,0);
+
+    requestAnimationFrame(refresh);
+  }
+  requestAnimationFrame(refresh);
+
+  db = msk;
+
+  //helpers
+  function valid(x,y,frm) {
+    bg.save();
+    bg.clearRect(0,0,120,190);
+    bg.fillStyle = "rgba(128,0,0,255)";
+    bg.fillRect(0,0,10,190);
+    bg.fillRect(110,0,10,190);
+    bg.fillRect(0,180,200,10);
+    for (var i = 0; i < 10; i++) {
+      for (var j = 0; j < 18; j++) {
+        if (occupied[j*10+i] == 1) bg.fillRect(i*10+10,j*10,10,10);
+      }
+    }
+    bg.restore();
+
+    ft.clearRect(0,0,190,200)
+    ft.drawImage(bgt,0,0);
+
+    msk.putImageData(bank[pc.ltr].masks[frm % bank[pc.ltr].masks.length],0,0);
+    ft.drawImage(mskt,10*x+10,10*y);
+
+    var img = ft.getImageData(0,0,120,190).data;
+    var col = false;
+    for (var i = 0; i < img.length; i = i + 4) {
+      if (img[i] > 250 && img[i+4] > 250) {
+        var col = true;
+        break;
+      }
+    }
+    return !col;
+
+  }
+
+  function drawPiece() {
+    if (bag.length < 1) for (var i = 0; i < pcs.length; i++) bag.push(pcs[i]);
+    var idx = Math.floor(Math.random()*bag.length);
+    pc.x = 3;
+    pc.y = 0;
+    pc.frm = 0;
+    pc.dirty = true;
+    return bag.splice(idx,1)[0];
+  }
+
+  function occupy() {
+    brk.drawImage(ctxt,0,0,350,630);
+    for (var x = 0; x < 4; x++) {
+      for (var y = 0; y < 4; y++) {
+        if (bank[pc.ltr].bitmaps[pc.frm % bank[pc.ltr].bitmaps.length][x+y*4] == 1) {
+          occupied[pc.x+x+(pc.y+y)*10] = bank[pc.ltr].bitmaps[pc.frm % bank[pc.ltr].bitmaps.length][x+y*4];
+        }
+      }
+    }
+  }
+
+  function clear() {
+    var lines = [];
+    cutscene = true;
+    for (var j = 0; j < 18; j++) {
+      var straight = true;
+      for (var i = 0; i < 10; i++) {
+        if (occupied[i+j*10] != 1) {
+          straight = false;
+          break;
+        }
+      }
+      if (straight) lines.push(j);
+    }
+    for (var j = 0; j < lines.length; j++) {
+      var line = lines[j];
+      ctx.save();
+      ctx.fillStyle = "rgba(255,255,255,255)";
+      ctx.fillRect(0,0,350,630);
+      ctx.restore();
+      ctx.drawImage(brkt,0,0,350,35*line,0,35,350,line*35);
+      if (line != 17) {
+        ctx.drawImage(brkt,0,35*line+35,350,630-(35*line+35),0,35*line+35,350,630-(35*line+35));
+      }
+      brk.drawImage(ctxt,0,0,350,630);
+      for (var k = line; k >= 1; k--) {
+        for (var i = 0; i < 10; i++) occupied[i+k*10] = occupied[i+(k-1)*10];
+      }
+      for (var i = 0; i < 10; i++) occupied[i] = 0;
+    }
+    if (lines.length > 0) {
+      var base = [40,100,300,1200];
+      base = base[lines.length-1]*(level+1);
+      score += base;
+    }
+    lineCount -= lines.length;
+    if (lineCount < 1) {
+      lineCount = 10;
+      level++;
+      if (level >= gs.length) level = gs.length-1;
+      G = gs[level];
+    }
+    scr.html('Score: ' + score);
+    lvl.html('Level: ' + level);
+    togo.html('To Next: ' + lineCount);
+    cutscene = false;
+  }
+
+});
+  </script>
+
+</body>
+</html>
