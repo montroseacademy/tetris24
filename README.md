@@ -2,7 +2,7 @@
 
 ![screenshot of tetris24](http://tetris-comikaze24.rhcloud.com/screenshot.png)
 
-_Description: tetris24 is an HTML5 tetris clone written in 24 hours during Comikaze24. _
+_Description: tetris24 is an HTML5 tetris clone written in 24 hours during Comikaze24._
 
 Within the limitations of the coding time, this is basically my personal take on Tetris. At its heart it clones the Game Boy version, with a few minor rule changes that better fit my aesthetic.
 
@@ -15,6 +15,17 @@ Within the limitations of the coding time, this is basically my personal take on
 - level-dependent [lock delay](http://harddrop.com/wiki/Lock_delay "Lock delay - Hard Drop - Tetris Wiki")
 - *proper* Game Boy [naive gravity](http://harddrop.com/wiki/Line_clear#Line_clear_gravity "Line clear - Hard Drop - Tetris Wiki")
 - level-dependent [soft drop](http://harddrop.com/wiki/Drop#Soft_drop "Drop - Hard Drop - Tetris Wiki")
+
+## Platforms
+
+Tested on the latest (10/06/2013):
+
+- Chrome 27
+- Firefox 21
+- IE 10 
+- Safari 
+
+The game has been confirmed to work on the latest Chrome, Firefox, and Safari as well as IE10. It *might* work on IE8 or IE7.
 
 ## How to Play
 
@@ -30,21 +41,6 @@ Use the `w`,`a`,`s`,`d` keys to maneuver the falling terominos. The `j` and `k` 
 
 Gameplay begins immediately on page load. Restart the game at any time by refreshing the page.
 
-## Installation
-
-To serve the game from a webserver yourself, simply copy `144.png`, `72.png`, and `index.html` to an empty directory and serve that.
-
-## Platforms
-
-Tested on the latest (10/06/2013):
-
-- Chrome 27
-- Firefox 21
-- IE 10 
-- Safari 
-
-The game has been confirmed to work on the latest Chrome, Firefox, and Safari as well as IE10. It *might* work on IE8 or IE7.
-
 ## Known Issues
 
 ### Static Resolution
@@ -53,7 +49,11 @@ Due to time constraints, the game does not have an adjustable resolution or size
 
 ### Difficulty Curve
 
-I based my difficulty curve on the table from the original Game Boy rom at [Hard Drop(http://harddrop.com/wiki/Tetris_(Game_Boy) "Tetris (Game Boy) - Hard Drop - Tetris Wiki"). However, it didn't feel as aggressive in the early levels as I remember. My resulting adjustments have likely made the game inhumanly hard at the higher difficulty levels.
+I based my difficulty curve on the table from the original Game Boy rom at [Hard Drop](http://harddrop.com/wiki/Tetris_(Game_Boy) "Tetris (Game Boy) - Hard Drop - Tetris Wiki"). However, it didn't feel as aggressive in the early levels as I remember. My resulting adjustments have likely made the game inhumanly hard at the higher difficulty levels.
+
+## Installation
+
+To serve the game from a webserver yourself, simply copy `144.png`, `72.png`, and `index.html` to an empty directory and serve that.
 
 ## Thanks
 
