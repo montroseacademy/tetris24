@@ -51,7 +51,7 @@ Due to time constraints, the game does not have an adjustable resolution or size
 
 ### Difficulty Curve
 
-I based my difficulty curve on the table from the original Game Boy rom at [Hard Drop](http://harddrop.com/wiki/Tetris_(Game_Boy) "Tetris (Game Boy) - Hard Drop - Tetris Wiki"). However, it didn't feel as aggressive in the early levels as I remember. My resulting adjustments have likely made the game inhumanly hard at the higher difficulty levels.
+I based my difficulty curve on the table from the original Game Boy rom at <a href="http://harddrop.com/wiki/Tetris_(Game_Boy)">Hard Drop</a>. However, it didn't feel as aggressive in the early levels as I remember. My resulting adjustments have likely made the game inhumanly hard at the higher difficulty levels.
 
 ## Installation
 
