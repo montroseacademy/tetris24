@@ -12,7 +12,7 @@ Within the limitations of the coding time, this is basically my personal take on
 
 - 40hz game control
 - self-adjusting display framerate with framerate independent logic
-- 20 progress levels of difficulty/speed
+- 20 progressive levels of difficulty/speed
 - level-dependent scoring
 - level-dependent [lock delay](http://harddrop.com/wiki/Lock_delay "Lock delay - Hard Drop - Tetris Wiki")
 - *proper* Game Boy [naive gravity](http://harddrop.com/wiki/Line_clear#Line_clear_gravity "Line clear - Hard Drop - Tetris Wiki")
