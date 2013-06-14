@@ -1,10 +1,10 @@
 # _Tetris24_
 
-![screenshot of tetris24](http://tetris-comikaze24.rhcloud.com/screenshot.png)
+![screenshot of tetris24](http://montrose.is/tetris/screenshot.png)
 
 **tetris24 is an HTML5 tetris clone written in 24 hours during [Comikaze24](http://comikaze24.com/ "Comikaze 24hr Comic Challenge").**
 
-You can play the game at [http://tetris-comikaze24.rhcloud.com/](http://tetris-comikaze24.rhcloud.com/ "24 Hour Tetris"). 
+You can play the game at [http://montrose.is/tetris/](http://montrose.is/tetris/ "24 Hour Tetris"). 
 
 Within the limitations of the coding time, this is basically my personal take on Tetris. At its heart it clones the Game Boy version, with a few minor rule changes that better fit my aesthetic.
 
@@ -31,7 +31,7 @@ The game has been confirmed to work on the latest Chrome, Firefox, and Safari as
 
 ## How to Play
 
-You can play the game at [http://tetris-comikaze24.rhcloud.com/](http://tetris-comikaze24.rhcloud.com/ "24 Hour Tetris"). 
+You can play the game at [http://montrose.is/tetris/](http://montrose.is/tetris/ "24 Hour Tetris"). 
 
 Paraphrasing [Wikipedia](http://en.wikipedia.org/wiki/Tetris "Tetris - Wikipedia, the free encyclopedia"):
 
